@@ -1,0 +1,26 @@
+{
+    "name": "drechsler-development/class-library",
+    "description": "a bunch of classes you can use in your projects",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "DD\\": "src/DD"
+        }
+    },
+    "authors": [
+        {
+            "name": "kugelschreiber1978",
+            "email": "info@drechsler-development.de"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "ext-curl": "*",
+        "ext-soap": "*",
+        "ext-gd": "*",
+        "ext-json": "*",
+        "ext-mbstring": "*",
+        "ext-ctype": "*"
+    }
+}
