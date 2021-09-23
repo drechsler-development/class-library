@@ -24,7 +24,7 @@ Just install the package and it is ready to use!
 Usage
 =====
 
-Get country of the visitor
+Formats a date into german fomrat with long year
 
     $date = "2012-12-31";
     $formattedDate = Date::FormatDateToFormat ($date, Date::DATE_FORMAT_GERMAN_DATE_LONG_YEAR); //will return 31.12.2021
