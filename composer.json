@@ -14,13 +14,13 @@
             "email": "info@drechsler-development.de"
         }
     ],
-    "minimum-stability": "dev",
     "require": {
         "ext-curl": "*",
         "ext-soap": "*",
         "ext-gd": "*",
         "ext-json": "*",
         "ext-mbstring": "*",
-        "ext-ctype": "*"
+        "ext-ctype": "*",
+        "ext-pdo": "*"
     }
 }
