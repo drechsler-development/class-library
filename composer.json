@@ -15,6 +15,7 @@
         }
     ],
     "require": {
+        "phpmailer/phpmailer": "^6.2",
         "ext-curl": "*",
         "ext-soap": "*",
         "ext-gd": "*",
