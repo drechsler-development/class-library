@@ -2,7 +2,9 @@
 
 namespace DD\Mailer;
 
+use DD\Exceptions\ValidationException;
 use DD\SystemType;
+use DD\Utils;
 use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\PHPMailer;
 
@@ -17,6 +19,12 @@ use PHPMailer\PHPMailer\PHPMailer;
  * You also must declare the SMTP_USER, SMTP_PASS, SMTP_SERVER somehwere as global constants, to be able to send emails via SMTP
  */
 class Mailer extends PHPMailer {
+
+	const EMAIL_SUBJECT_EXCEPTION                   = "Exception";
+	const EMAIL_SUBJECT_DEBUG                       = 'DEBUG Exception';
+	const EMAIL_SUBJECT_DB_EXCEPTION                = 'DB Exception';
+	const EMAIL_SUBJECT_INVALID_ARGUMNENT_EXCEPTION = 'Invalid Argument Exception';
+	const LOG_FOLDER								= 'logs/email';
 
 	private bool $isComment;
 	public bool $isAdminMail = false;
@@ -202,6 +210,107 @@ class Mailer extends PHPMailer {
 		$systemType     = defined ('SYSTEMTYPE') ? SYSTEMTYPE : '';
 
 		return $systemType != SystemType::PROD ? $systemType." :: ".$subject : $subject;
+
+	}
+
+	/**
+	 * Send an email to the administrator/developer
+	 * @throws ValidationException
+	 */
+	public static function SendAdminMail (string $body, string $subject = '', string $filePath = '', string $fileName = '') {
+
+		ob_start ();
+		Utils::PrintStack (debug_backtrace ());
+		$varBacktrace = ob_get_contents ();
+		ob_end_clean ();
+
+		try {
+
+			$recipient = defined("EMAIL_DEVELOPER") ? EMAIL_DEVELOPER : '';
+			if(empty($recipient)){
+				throw new ValidationException("No constant EMAIL_DEVELOPER defined");
+			}
+
+			//create a new Email-Objekt as this is a static method
+			$mail              = new Mailer();
+			$mail->isAdminMail = true;
+			$mail->addReplyTo ('noreply@'.$_SERVER['HTTP_HOST']);
+			$mail->DDAddTo ($recipient, false, false);
+			$subject = strlen (trim ($subject)) > 0 ? trim ($subject) : 'Email für VABS Admininistrator';
+			$mail->DDSubject ($subject);
+			//Body
+			$body = str_replace ('::', '<br>', $body);
+			$body = str_replace ("\n", '<br>', $body);
+			$body = str_replace (' Fehler: ', '<br> Fehler: ', $body);
+			$body .= '<br>'.$varBacktrace;
+
+			//if you are using a CMS system with logged in users,
+			//you can add them to the end of the body, so you know who has thrown that error
+			if (!empty($_SESSION['login'])) {
+				$body .= '<br>User: '.$_SESSION['login']['firstname'].' '.$_SESSION['login']['lastname'].' ('.$_SESSION['login']['id'].')';
+			}
+
+			$mail->msgHTML ($body);
+
+			if (!empty($filePath) && !empty($fileName) && file_exists ($filePath)) {
+				$mail->addAttachment ($filePath, $fileName);
+			}
+
+			//Send the mail
+			if (!$mail->DDSend (true)) {
+				throw new Exception($mail->ErrorInfo);
+			}
+
+		} catch (Exception $e) {
+
+			self::Log ($e->getMessage ());
+
+		}
+
+	}
+
+	/**
+	 * Logs a message to a daily log file
+	 * @param string $message
+	 */
+	public static function Log (string $message = '') {
+
+		try {
+
+			$loginId = $_SESSION['login']['id'] ?? 0;
+
+			$path = $_SERVER['DOCUMENT_ROOT'].'/'.self::LOG_FOLDER;
+
+			if (!@file_exists ($path)) {
+				@mkdir ($path, 0777, true);
+			}
+
+			$date      = date ('Y-m-d');
+			$time       = date ('H:i:s');
+			$text       = '';
+			$fileName  = $path.'/'.$date.'.log';
+			$backTrace  = debug_backtrace ();
+			$scriptPath = $backTrace[0]['file'];
+
+			//Write header Data if file not exists
+			if (!@file_exists ($fileName)) {
+				$text .= "Date\tTime\tUser\tFile\tMessage\r\n";
+			} // ENDE
+
+			$text .= $date."\t".$time."\t".$loginId."\t".$scriptPath."\t".$message;
+
+			$filestream = @fopen ($fileName, 'a');
+			if($filestream !== false){
+				@fwrite ($filestream, $text."\r\n");
+				@fclose ($filestream);
+			}else{
+				throw new Exception("File could not be wrote to the email log folder");
+			}
+
+
+		} catch (Exception $e){
+			error_log($e->getMessage ());
+		}
 
 	}
 
