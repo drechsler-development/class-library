@@ -19,7 +19,7 @@ class Image
 	 * @return array|string|string[]
 	 * @throws Exception
 	 */
-	public static function CropImage (string $file, int $height, int $width, bool $sourceFileContainsDocRoot, bool $recreate, bool $outputWithDocRoot, bool $log) {
+	public static function CropImage (string $file, int $height, int $width, bool $sourceFileContainsDocRoot, bool $recreate, bool $outputWithDocRoot, bool $log = false) {
 
 		ini_set ('gd.jpeg_ignore_warning', 1);
 
