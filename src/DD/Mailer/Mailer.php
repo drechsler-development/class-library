@@ -247,7 +247,10 @@ class Mailer extends PHPMailer {
 			//if you are using a CMS system with logged in users,
 			//you can add them to the end of the body, so you know who has thrown that error
 			if (!empty($_SESSION['login'])) {
-				$body .= '<br>User: '.$_SESSION['login']['firstname'].' '.$_SESSION['login']['lastname'].' ('.$_SESSION['login']['id'].')';
+				$userFirstName = $_SESSION['login']['firstname'] ?? '';
+				$userLastname = $_SESSION['login']['lastname'] ?? '';
+				$userId = $_SESSION['login']['id'] ?? '';
+				$body .= '<br>User: '.$userFirstName.' '.$userLastname.' ('.$userId.')';
 			}
 
 			$mail->msgHTML ($body);
