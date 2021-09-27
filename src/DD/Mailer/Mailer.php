@@ -24,6 +24,7 @@ class Mailer extends PHPMailer {
 	const EMAIL_SUBJECT_DEBUG                       = 'DEBUG Exception';
 	const EMAIL_SUBJECT_DB_EXCEPTION                = 'DB Exception';
 	const EMAIL_SUBJECT_INVALID_ARGUMNENT_EXCEPTION = 'Invalid Argument Exception';
+	const EMAIL_SUBJECT_VALIDATION_EXCEPTION 		= 'Validation Exception';
 	const LOG_FOLDER								= 'logs/email';
 
 	private bool $isComment;
@@ -215,7 +216,6 @@ class Mailer extends PHPMailer {
 
 	/**
 	 * Send an email to the administrator/developer
-	 * @throws ValidationException
 	 */
 	public static function SendAdminMail (string $body, string $subject = '', string $filePath = '', string $fileName = '') {
 
@@ -261,7 +261,7 @@ class Mailer extends PHPMailer {
 				throw new Exception($mail->ErrorInfo);
 			}
 
-		} catch (Exception $e) {
+		} catch (Exception | ValidationException $e) {
 
 			self::Log ($e->getMessage ());
 
