@@ -15,6 +15,14 @@ class Strings {
 	const PHP_VAR_TYPE_TIME      = 6;
 	const PHP_VAR_TYPE_DATE_TIME = 7;
 
+	const NUM          = 1;
+	const STR          = 2;
+	const SPEC         = 3;
+	const NUM_STR      = 4;
+	const NUM_SPEC     = 5;
+	const STR_SPEC     = 6;
+	const NUM_STR_SPEC = 7;
+
 	/**
 	 * @param $delimiters
 	 * @param $string
@@ -481,6 +489,55 @@ class Strings {
 		$chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#%&*()_;:,.';
 
 		return substr (str_shuffle ($chars), 0, $length);
+
+	}
+
+	/**
+	 * @param int $length = 10
+		self::NUM          = 1; //Only numbers 0-9 will be returned
+		self::STR          = 2; //Only characters a-zA-z will be returned
+		self::SPEC         = 3; //Only special characters [!@#%&*()_;:,.] will be returned
+		self::NUM_STR      = 4; //numbers and characters will be returned
+		self::NUM_SPEC     = 5; //numbers and special characters will be returned
+		self::STR_SPEC     = 6; //characters and special characters will be returned
+		self::NUM_STR_SPEC = 7; //numbers, characters and special characters will be returned
+	 * @param int $type = NUM_STR
+	 * @param bool $upperCase = false
+	 * @return string
+	 */
+	public static function GetRandomString (int $length = 10, int $type = self::NUM_STR, bool $upperCase = false): string {
+
+		$chars   = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0';
+		$numbers = '0123456789';
+		$special = '!@#%&*()_;:,.';
+
+		switch($type){
+			case self::NUM:
+				$string = $numbers;
+				break;
+			case self::STR:
+				$string = $chars;
+				break;
+			case self::SPEC:
+				$string = $special;
+				break;
+			case self::NUM_SPEC:
+				$string = $numbers.$special;
+				break;
+			case self::STR_SPEC:
+				$string = $chars.$special;
+				break;
+			case self::NUM_STR_SPEC:
+				$string = $numbers.$chars.$special;
+				break;
+			default:
+				$string = $numbers.$chars;
+				break;
+		}
+
+		$randString = substr (str_shuffle ($string), 0, $length);
+
+		return $upperCase ? strtoupper ($randString) : $randString;
 
 	}
 
