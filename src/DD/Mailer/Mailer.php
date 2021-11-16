@@ -208,7 +208,7 @@ class Mailer extends PHPMailer {
 	 */
 	private function PossibleReplaceSubject($subject): string {
 
-		$systemType     = defined ('SYSTEMTYPE') ? SYSTEMTYPE : '';
+		$systemType     = defined ('SYSTEMTYPE_NAME') ? SYSTEMTYPE_NAME : '';
 
 		return $systemType != SystemType::PROD ? $systemType." :: ".$subject : $subject;
 
