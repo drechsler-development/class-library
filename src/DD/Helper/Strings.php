@@ -84,7 +84,7 @@ class Strings {
 		$filename = mb_ereg_replace("([^\w\s\d\-_~,;\[\]\(\).])", '', $filename);
 		// Remove any runs of periods (thanks falstro!)
 		$filename = mb_ereg_replace("([\.]{2,})", '', $filename);
-		$filename = preg_replace("/[^a-z0-9.-_]/","",strtolower($filename));
+		$filename = preg_replace("/[^a-z0-9.\-_]/","",strtolower($filename));
 
 		// maximize filename length to 255 bytes http://serverfault.com/a/9548/44086
 		$ext = pathinfo($filename, PATHINFO_EXTENSION);
@@ -330,25 +330,25 @@ class Strings {
 				/* echo "getting:".$i; */
 				$rettxt .= $ones[$i];
 			}elseif($i < 100){
-				if(substr($i,0,1)!="0") {
-					$rettxt .= $tens[substr ($i, 0, 1)];
-				}
+
+				$rettxt .= $tens[substr ($i, 0, 1)];
+
 				if(substr($i,1,1)!="0") {
-					$rettxt .= "".$ones[substr ($i, 1, 1)];
+					$rettxt .= $ones[substr ($i, 1, 1)];
 				}
 			}else{
-				if(substr($i,0,1)!="0") {
-					$rettxt .= $ones[substr ($i, 0, 1)]." ".$hundreds[0];
-				}
+
+				$rettxt .= $ones[substr ($i, 0, 1)]." ".$hundreds[0];
+
 				if(substr($i,1,1)!="0") {
-					$rettxt .= "".$tens[substr ($i, 1, 1)];
+					$rettxt .= $tens[substr ($i, 1, 1)];
 				}
 				if(substr($i,2,1)!="0") {
-					$rettxt .= "".$ones[substr ($i, 2, 1)];
+					$rettxt .= $ones[substr ($i, 2, 1)];
 				}
 			}
 			if($key > 0){
-				$rettxt .= "".$hundreds[$key]."";
+				$rettxt .= $hundreds[$key];
 			}
 		}
 		if($decnum > 0){
@@ -357,24 +357,47 @@ class Strings {
 				$rettxt .= $ones[$decnum];
 			}elseif($decnum < 100){
 				$rettxt .= $tens[substr($decnum,0,1)];
-				$rettxt .= "".$ones[substr($decnum,1,1)];
+				$rettxt .= $ones[substr($decnum,1,1)];
 			}
 		}
 		return $rettxt;
 	}
 
 	/**
+	 * formats a given telephone number to an international format without spaces and any extra character
+	 * So a number provided as:
+	 * 0341/580-98 71 	will be returned as
+	 * +493415809871 	based on the standard countryShortCode '+49' and the standard removePlusSign = false
+	 * 00493415809871	based on the standard countryShortCode '+49' and the standard removePlusSign = true
+	 * +443415809871	based on the provided countryShortCode '+44' and the standard removePlusSign = false
 	 * @param string $number
+	 * @param string $countryCodeSuffix
+	 * @param bool $removePlusSign
 	 * @return string
 	 */
-	public static function FormatTelefoneNumber(string $number): string {
+	public static function FormatTelefoneNumber(string $number, string $countryCodeSuffix = "", bool $removePlusSign = false): string {
 
 		try {
 
-			$search = array('|^0|','|/|', '| |', '|\.|');
-			$repl = array('+49', '', '', '');
+			//Removes (0)
+			$number = preg_replace ('/\(\d\)/', '', $number);
+			// Removes WhiteSpaces like \r\n\t\f\v
+			$number = preg_replace ('/\s/', '', $number);
+			//Makes +49 to 0049 to be able replacing all non digits in the next step
+			$number = preg_replace ('/^\+/', '00', $number);
+			//Removes any non digit
+			$number = preg_replace ('/\D/', '', $number);
 
-			$output=  preg_replace ($search, $repl, $number);
+			//if we dont want to remove the plus sign, we need to add it again
+			if(!$removePlusSign){
+				$number = preg_replace ('/(^00)/', '+', $number);
+			}
+
+			if($countryCodeSuffix){
+				if (false === strpos ($number, "+")) {
+					$number = preg_replace ('/^0/', $countryCodeSuffix, $number);
+				}
+			}
 
 		} catch (Exception $e){
 
@@ -382,7 +405,20 @@ class Strings {
 
 		}
 
-		return $output;
+		return $number;
+
+	}
+
+	/**
+	 * Same function but with english name
+	 * @param string $number
+	 * @param string $countryCodeSuffix
+	 * @param bool $removePlusSign
+	 * @return string
+	 */
+	public static function FormatTelephoneNumber (string $number, string $countryCodeSuffix = "", bool $removePlusSign = false): string {
+
+		return self::FormatTelefoneNumber ($number, $countryCodeSuffix, $removePlusSign);
 
 	}
 

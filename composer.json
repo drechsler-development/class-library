@@ -1,6 +1,12 @@
 {
     "name": "drechsler-development/class-library",
     "description": "a bunch of classes you can use in your projects",
+    "keywords": [
+        "classlibrary",
+        "class-library",
+        "class library",
+        "helper classes"
+    ],
     "type": "library",
     "license": "MIT",
     "autoload": {
