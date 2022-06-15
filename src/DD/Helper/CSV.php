@@ -44,6 +44,7 @@ class CSV {
 	} // END public static function CSV2Array($filename='', $delimiter=',', $ignoreFirstLine = true) {
 
 	/**
+	 * Improved via https://stackoverflow.com/questions/50869961/csv-data-to-array-map-and-str-getcsv-using-delimiter
 	 * @param string $filename
 	 * @param string $delimiter
 	 * @param string $enclosedBy
@@ -53,20 +54,16 @@ class CSV {
 	 */
 	public static function GetCSVHeaderFields(string $filename, string $delimiter, string $enclosedBy = '"', string $escapedBy = "\\") : array {
 
-		$headerFields = [];
-
 		if(!file_exists($filename) || is_dir($filename) || !is_readable($filename)) {
 			throw new ValidationException("File does either not exist, is a folder or is not readable");
 		}
 
-		if (($handle = fopen ($filename, 'r')) !== false) {
+		$rows = array_map (function($v) use ($delimiter, $enclosedBy, $escapedBy) {
 
-			$headerFields = fgetcsv ($handle, 1000, $delimiter, $enclosedBy, $escapedBy);
-			fclose ($handle);
+			return str_getcsv ($v, $delimiter, $enclosedBy, $escapedBy);
+		}, file ($filename));
 
-		}
-
-		return $headerFields;
+		return array_shift ($rows);
 
 	}
 
