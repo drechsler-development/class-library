@@ -43,10 +43,6 @@ class DropBox {
 	 */
 	public function __construct (string $accessToken, bool $useRootFolder = true) {
 
-		if(strlen($accessToken) != 64){
-			throw new ValidationException('Token must be 64 characters long!');
-		}
-
 		$this->token = $accessToken;
 
 		if($useRootFolder){
