@@ -27,7 +27,7 @@ class DropBoxOAuth2
 	 * and will be returned in the appropriate methods for a better further process in your software
 	 * @var array
 	 */
-	private array $responseArray = ['error' => false];
+	public array $responseArray = ['error' => false];
 
 	/**
 	 * This is your DropBOX API client id (aka app key)
@@ -124,19 +124,19 @@ class DropBoxOAuth2
 		}
 
 		$endPoint = '/check/app';
-		$url    = self::DROPBOX_URL.$endPoint;
-		$header = [
+		$url      = self::DROPBOX_URL.$endPoint;
+		$header   = [
 			'Content-Type: application/json',
 		];
-		$data   = [
-			"query"         => "foo"
+		$data     = [
+			"query" => "foo"
 		];
 
 		$response = $this->MakeCurlRequest ($url, $header, $data, true);
 
 		if (!empty($response['error'])) {
 			throw new Exception(__METHOD__.": Error: ".$response['error']." ErrorDescription: ".$response['error_description']);
-		} else if (empty($response['result']) || $response['result'] != "foo") {
+		} else if (empty($response['result']['result'] || $response['result']['result'] != "foo")) {
 			throw new Exception("No proper response came back from the CheckApi method");
 		}
 
@@ -165,14 +165,16 @@ class DropBoxOAuth2
 			"redirect_uri" => $this->callBackUrl,
 		];
 
-		$response = $this->MakeCurlRequest ($url, $header, $data);
+		$response            = $this->MakeCurlRequest ($url, $header, $data);
+		$this->responseArray = $response;
 
 		if (!empty($response['error'])) {
 			throw new Exception(__METHOD__.": Error: ".$response['error']." ErrorDescription: ".$response['error_description']);
-		} else if (!empty($response['access_token'])) {
-			$this->token        = $response['access_token'];
-			$this->refreshToken = $response['refresh_token'] ?? '';
-			$seconds            = (int)$response['expires_in'];
+		} else if (!empty($response['result'])) {
+			$result             = $response['result'];
+			$this->token        = $result['access_token'];
+			$this->refreshToken = $result['refresh_token'] ?? '';
+			$seconds            = (int)$result['expires_in'];
 			$this->expireDate   = (new DateTime())->modify ("+$seconds seconds");
 		} else {
 			throw new Exception("No access token has been provided in the result");
@@ -255,7 +257,7 @@ class DropBoxOAuth2
 
 		$this->responseArray['error'] = "";
 
-		if (substr ($folder, 0,1) == "/") {
+		if (substr ($folder, 0, 1) == "/") {
 			$folder = substr ($folder, 1);
 		}
 		if (substr ($folder, -1) == "/") {
@@ -265,7 +267,7 @@ class DropBoxOAuth2
 		$endPoint = '/files/upload';
 
 		//$folder = strlen ($folder) > 0 ? "/".$this->appFolder."/".$folder : "/".$this->appFolder;
-		$path   = !empty($folder) ? "/".$folder."/".basename ($filePath) : basename ($filePath);
+		$path = !empty($folder) ? "/".$folder."/".basename ($filePath) : basename ($filePath);
 
 		$args   = json_encode ([
 			"path"       => $path,
@@ -336,7 +338,7 @@ class DropBoxOAuth2
 			"include_mounted_folders" => false
 		];
 
-		$url = self::DROPBOX_URL.$endPoint;
+		$url                 = self::DROPBOX_URL.$endPoint;
 		$this->responseArray = self::MakeCurlRequest ($url, $header, $parameters, true);
 
 		/*try {
@@ -426,10 +428,10 @@ class DropBoxOAuth2
 	 * This method checks if the current token is still valid and not expired by calling the CheckApi method.
 	 * If the response is ok. All is fine, otherwise it will check if the response contains an error message reflecting to the expiration of the token
 	 * It will then automatically call the GetRefreshToken to refresh the Token and pass it to the application
-	 * @return void
+	 * @return int
 	 * @throws Exception
 	 */
-	private function CheckAndGetToken() : int {
+	private function CheckAndGetToken (): int {
 
 		if (empty($this->token)) {
 			throw new Exception("Token is not set");
@@ -437,31 +439,32 @@ class DropBoxOAuth2
 
 		try {
 
-			if($this->CheckApi ()){
+			if ($this->CheckApi ()) {
 				return self::TOKEN_VALID;
 			}
 
-
-		}catch(Exception $e) {
+		} catch (Exception $e) {
 
 			$message = $e->getMessage ();
 
-			if(strstr($message, 'expire')){
+			if (strstr ($message, 'expire')) {
 
 				if (empty($this->refreshToken)) {
 					throw new Exception("RefreshToken is not set");
 				}
 
 				$this->GetRefreshToken ();
+
 				return self::TOKEN_REFRESHED;
 
-			}else{
+			} else {
 				throw new Exception(__METHOD__." Unknown Response from Exception Message");
 			}
 
 		}
 
+		return 0;
+
 	}
 
 }
-
