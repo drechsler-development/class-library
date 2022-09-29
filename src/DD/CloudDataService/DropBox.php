@@ -18,11 +18,6 @@ class DropBox
 	 */
 	private array $responseArray = ['error' => false];
 
-	/**
-	 * @var string
-	 */
-	private string $rootFolder = '';
-
 	#endregion
 
 	#region private vars
@@ -56,7 +51,6 @@ class DropBox
 		$endPoint = '/files/upload';
 
 		$path = $folder != "" ? $folder."/".basename ($file) : basename ($file);
-		$path = $this->rootFolder."/".$path;
 
 		$args   = json_encode ([
 				"path"       => $path,
@@ -165,7 +159,7 @@ class DropBox
 		];
 
 		$postFields = json_encode ([
-				"path"                                => "/".$this->rootFolder."/".$folder,
+				"path"                                => "/".$folder,
 				"recursive"                           => false,
 				"include_media_info"                  => false,
 				"include_deleted"                     => false,
@@ -269,7 +263,7 @@ class DropBox
 
 		$endPoint = '/files/download_zip';
 
-		$path = $this->rootFolder."/".$folder;
+		$path = "/".$folder;
 
 		$args   = json_encode ([
 			"path" => $path,
