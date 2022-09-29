@@ -2,6 +2,7 @@
 
 namespace DD\CloudDataService;
 
+use DD\Helper\Strings;
 use Exception;
 
 class DropBox
@@ -213,39 +214,42 @@ class DropBox
 		$endPoint = '/files/download';
 
 		$path = $folder != "" ? $folder."/".basename ($file) : basename ($file);
-		$path = $this->rootFolder."/".$path;
 
 		$args   = json_encode ([
 			"path" => $path,
 		]);
 		$header = [
-			'Authorization: Bearer '.$this->token,
-			'Content-Type: application/octet-stream',
-			'Dropbox-API-Arg: '.$args
+			"Authorization: Bearer ".$this->token,
+			"Content-Type: application/octet-stream",
+			"Dropbox-API-Arg: ".$args
 		];
 
 		try {
 
-			$curl     = curl_init (self::DROPBOX_CONTENT_URL.$endPoint);
-			$path     = $file;
-			$fp       = fopen ($path, 'rb');
-			$filesize = filesize ($path);
+			$extension = substr ($file, strripos ($file, "."));
+
+			$fileName    = Strings::GetRandomString (20).$extension;
+			$tempFile    = fopen (TEMP."/".$fileName, "w+");
+			$tempFileWeb = TEMP_WEB."/".$fileName;
+
+			$curl = curl_init (self::DROPBOX_CONTENT_URL.$endPoint);
 
 			curl_setopt ($curl, CURLOPT_HTTPHEADER, $header);
 			curl_setopt ($curl, CURLOPT_POST, true);
-			curl_setopt ($curl, CURLOPT_POSTFIELDS, fread ($fp, $filesize));
-			curl_setopt ($curl, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt ($curl, CURLOPT_FILE, $tempFile);
 
-			$response  = curl_exec ($curl);
+			$response = curl_exec ($curl);
+
+			//print_r($response);
+
 			$http_code = curl_getinfo ($curl, CURLINFO_HTTP_CODE);
-
+			curl_close ($curl);
+			fclose ($tempFile);
 			if ($http_code == 200) {
-				$this->responseArray['result'] = json_decode ($response, true);
+				$this->responseArray['url'] = $tempFileWeb;
 			} else {
 				$this->responseArray['error'] = json_decode ($response, true);
 			}
-
-			curl_close ($curl);
 
 		} catch (Exception $e) {
 			$this->responseArray['error'] = $e->getMessage ();
