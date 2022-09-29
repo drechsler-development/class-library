@@ -220,4 +220,106 @@ class DropBox {
 
 	}
 
+	/**
+	 * @param string $folder
+	 * @param string $file
+	 * @return array
+	 */
+	public function Download (string $folder, string $file) : array {
+
+		$this->responseArray['error'] = "";
+
+		$endPoint = '/files/download';
+
+		$path = $folder != "" ? $folder."/".basename ($file) : basename ($file);
+		$path = $this->rootFolder."/".$path;
+
+		$args   = json_encode ([
+			"path" => $path,
+		]);
+		$header = [
+			'Authorization: Bearer '.$this->token,
+			'Content-Type: application/octet-stream',
+			'Dropbox-API-Arg: '.$args
+		];
+
+		try {
+
+			$curl     = curl_init (self::DROPBOX_CONTENT_URL.$endPoint);
+			$path     = $file;
+			$fp       = fopen ($path, 'rb');
+			$filesize = filesize ($path);
+
+			curl_setopt ($curl, CURLOPT_HTTPHEADER, $header);
+			curl_setopt ($curl, CURLOPT_POST, true);
+			curl_setopt ($curl, CURLOPT_POSTFIELDS, fread ($fp, $filesize));
+			curl_setopt ($curl, CURLOPT_RETURNTRANSFER, true);
+
+			$response  = curl_exec ($curl);
+			$http_code = curl_getinfo ($curl, CURLINFO_HTTP_CODE);
+
+			if ($http_code == 200) {
+				$this->responseArray['result'] = json_decode ($response, true);
+			} else {
+				$this->responseArray['error'] = json_decode ($response, true);
+			}
+
+			curl_close ($curl);
+
+		} catch (Exception $e) {
+			$this->responseArray['error'] = $e->getMessage ();
+		}
+
+		return $this->responseArray;
+
+	}
+
+	/**
+	 * @param string $folder
+	 * @return array
+	 */
+	public function DownloadZip (string $folder) : array {
+
+		$this->responseArray['error'] = "";
+
+		$endPoint = '/files/download_zip';
+
+		$path = $this->rootFolder."/".$folder;
+
+		$args   = json_encode ([
+			"path" => $path,
+		]);
+		$header = [
+			'Authorization: Bearer '.$this->token,
+			'Content-Type: application/octet-stream',
+			'Dropbox-API-Arg: '.$args
+		];
+
+		try {
+
+			$curl     = curl_init (self::DROPBOX_CONTENT_URL.$endPoint);
+
+			curl_setopt ($curl, CURLOPT_HTTPHEADER, $header);
+			curl_setopt ($curl, CURLOPT_POST, true);
+			curl_setopt ($curl, CURLOPT_RETURNTRANSFER, true);
+
+			$response  = curl_exec ($curl);
+			$http_code = curl_getinfo ($curl, CURLINFO_HTTP_CODE);
+
+			if ($http_code == 200) {
+				$this->responseArray['result'] = json_decode ($response, true);
+			} else {
+				$this->responseArray['error'] = json_decode ($response, true);
+			}
+
+			curl_close ($curl);
+
+		} catch (Exception $e) {
+			$this->responseArray['error'] = $e->getMessage ();
+		}
+
+		return $this->responseArray;
+
+	}
+
 }
