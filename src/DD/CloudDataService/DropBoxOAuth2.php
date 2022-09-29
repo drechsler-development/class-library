@@ -205,12 +205,17 @@ class DropBoxOAuth2
 
 		if (!empty($response['error'])) {
 			throw new Exception(__METHOD__.":".$response['error']);
-		} else if (!empty($response['access_token'])) {
-			$this->token      = $response['access_token'];
-			$seconds          = (int)$response['expires_in'];
-			$this->expireDate = (new DateTime())->modify ("+$seconds seconds");
+		} else if (!empty($response['result'])) {
+			$result = $response['result'];
+			if (!empty($result['access_token'])) {
+				$this->token      = $result['access_token'];
+				$seconds          = (int)$result['expires_in'];
+				$this->expireDate = (new DateTime())->modify ("+$seconds seconds");
+			} else {
+				throw new Exception("No access token has been provided in the result.");
+			}
 		} else {
-			throw new Exception("No access token has been provided in the result");
+			throw new Exception("Unknown error in the result.");
 		}
 
 	}
