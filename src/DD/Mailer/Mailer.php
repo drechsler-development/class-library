@@ -31,7 +31,15 @@ class Mailer extends PHPMailer
 	const EMAIL_SUBJECT_PERMISSION_EXCEPTION        = 'Permission Exception';
 	const LOG_FOLDER                                = 'logs/email';
 
+	/**
+	 * Defines if the mail is a comment mail for chat functionality
+	 * @var bool
+	 */
 	private bool $isComment;
+	/**
+	 * defines if the email will be sent to an admin. In that case the developer will get the email
+	 * @var bool
+	 */
 	public bool  $isAdminMail = false;
 
 	public function __construct ($exceptions = null, $isComment = false) {
@@ -41,12 +49,22 @@ class Mailer extends PHPMailer
 		$this->isSMTP (); //Set the use of mailer via "SMTP"
 
 		$this->CharSet    = parent::CHARSET_UTF8;
-		$this->Username   = defined ("SMTP_USER") ? SMTP_USER : '';
+
+		//These are the standard settings for the mailer they need to be defined as global constants in your project
+		$this->Username   = defined (constant_name: "SMTP_USER") ? SMTP_USER : '';
 		$this->Password   = defined ("SMTP_PASS") ? SMTP_PASS : '';
 		$this->Host       = defined ("SMTP_SERVER") ? SMTP_SERVER : '';
-		$this->isComment  = (bool)$isComment;
 		$this->SMTPAuth   = defined ("SMTP_AUTH") ? SMTP_AUTH : true;
+
+		// However, if you want to use a different SMTP server that the global defined one, you can use the OVERWRITE constants
+
+		$this->Username = defined ("SMTP_USER_OVERWRITE") ? SMTP_USER_OVERWRITE : $this->Username;
+		$this->Password = defined ("SMTP_PASS_OVERWRITE") ? SMTP_PASS_OVERWRITE : $this->Password;
+		$this->Host     = defined ("SMTP_SERVER_OVERWRITE") ? SMTP_SERVER_OVERWRITE : $this->Host;
+		$this->SMTPAuth = defined ("SMTP_AUTH_OVERWRITE") ? SMTP_AUTH_OVERWRITE : $this->SMTPAuth;
+
 		$this->SMTPSecure = 'tls';
+		$this->isComment  = (bool)$isComment;
 
 		$systemType = defined ("SYSTEMTYPE") ? SYSTEMTYPE : '';
 		$folder     = defined ("PHP_MAILER_LOGS") ? PHP_MAILER_LOGS : '';
