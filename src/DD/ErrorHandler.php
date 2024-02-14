@@ -47,9 +47,9 @@ class ErrorHandler {
 
 			http_response_code ($code);
 
-			$showError = defined ('SHOW_ERRORS') && SHOW_ERRORS;
+			$showError = defined ('SHOW_ERRORS');
 
-			if ($showError) {
+			if ($showError && SHOW_ERRORS) {
 
 				$message = str_replace ('#', '<br>#', $exception->getMessage ());
 				//$message.= str_replace ('Stack trace:', '<br>StackTrace:#######################', $exception->getTraceAsString ());
