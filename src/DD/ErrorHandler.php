@@ -8,8 +8,6 @@ use ErrorException;
 use Exception;
 use PDOException;
 use Throwable;
-use const DD\Exceptions\SHOW_ERRORS;
-use const DD\Exceptions\SYSTEMTYPE_NAME;
 
 class ErrorHandler {
 
