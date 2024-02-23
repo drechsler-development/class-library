@@ -29,7 +29,31 @@ class Database {
 	 * @return PDO
 	 * @throws ValidationException
 	 */
-	public static function getInstance(): ?PDO {
+	public static function getInstance(string $host = null, string $dbName = null, string $dbUser = null, string $dbPass = null): ?PDO {
+
+		if($host && $dbName && $dbUser && $dbPass){
+			define('DB_HOST', $host);
+			define('DB_NAME', $dbName);
+			define('DB_USER', $dbUser);
+			define('DB_PASS', $dbPass);
+		}else{
+			//Check if global constants are defined
+			if(!defined ("DB_HOST")){
+				throw new ValidationException("DB_HOST not defined");
+			}
+
+			if(!defined ("DB_NAME")){
+				throw new ValidationException('DB_NAME not defined');
+			}
+
+			if(!defined ("DB_USER")){
+				throw new ValidationException('DB_USER not defined');
+			}
+
+			if(!defined ("DB_PASS")){
+				throw new ValidationException('DB_PASS not defined');
+			}
+		}
 
 		$pdoOptions = array(
 			PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8",
