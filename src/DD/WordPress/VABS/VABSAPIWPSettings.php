@@ -99,7 +99,8 @@ class VABSAPIWPSettings {
 		$stm = $this->conPDO->prepare ($SQL);
 		$stm->execute ();
 
-		$stm->setFetchMode (PDO::FETCH_CLASS, __CLASS__);
+		//the param is needed as we are passing the table name to the constructor of the class that isn't available in the ->row property when we assign the fetched row to it
+		$stm->setFetchMode (PDO::FETCH_CLASS, __CLASS__, [$this->table]);
 		$this->row = $stm->fetch ();
 
 	}
