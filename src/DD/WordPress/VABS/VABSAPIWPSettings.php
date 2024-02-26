@@ -34,19 +34,26 @@ class VABSAPIWPSettings {
 	public string $stripeSecretTestKey = '';
 	public string $stripeSecretProdKey = '';
 
+	public int    $blockBookingEnabled             = 0;
+	public string $blockBookingFrom                = '';
+	public string $blockBookingTo                  = '';
+	public string $blockBookingText                = '';
+	public int    $additionalCalendarStartDays     = 0;
+	public string $additionalCalendarStartDaysText = '';
+
 	public int $debug = 0;
 
 	public VABSAPIWPSettings $row;
-	public string                  $errorMessage  = '';
-	public string                  $versionNumber = '';
-	private string                 $table;
+	public string            $errorMessage  = '';
+	public string            $versionNumber = '';
+	private string           $table;
 
 	private PDO $conPDO;
 
 	/**
 	 * VABSAPIWPSettings constructor.
 	 *
-	 * @param string $table
+	 * @param string      $table
 	 * @param string|null $dbUser if you are passing NULL, the Database class expects the global constant defined as DB_USER
 	 * @param string|null $dbPass if you are passing NULL, the Database class expects the global constant defined as DB_PASS
 	 * @param string|null $dbName if you are passing NULL, the Database class expects the global constant defined as DB_NAME
@@ -56,9 +63,8 @@ class VABSAPIWPSettings {
 	 */
 	public function __construct (string $table, string $dbUser = null, string $dbPass = null, string $dbName = null, string $dbHost = null) {
 
-		$this->table = $table;
+		$this->table  = $table;
 		$this->conPDO = Database::getInstance ($dbUser, $dbPass, $dbName, $dbHost);
-
 
 		$this->CreateTableIfNotExists ();
 
@@ -92,7 +98,14 @@ class VABSAPIWPSettings {
 					IFNULL(useStripe,0) as useStripe,
 					IFNULL(stripeSandbox,0) as stripeSandbox,
 					IFNULL(stripeSecretTestKey,'') as stripeSecretTestKey,
-					IFNULL(stripeSecretProdKey,'') as stripeSecretProdKey
+					IFNULL(stripeSecretProdKey,'') as stripeSecretProdKey,
+					
+					IFNULL(blockBookingEnabled,0) as blockBookingEnabled,
+					IFNULL(blockBookingFrom,'') as blockBookingFrom,
+					IFNULL(blockBookingTo,'') as blockBookingTo,
+					IFNULL(blockBookingText,'') as blockBookingText,
+					IFNULL(additionalCalendarStartDays,0) as additionalCalendarStartDays,
+					IFNULL(additionalCalendarStartDaysText,'') as additionalCalendarStartDaysText
 
 				FROM
 					$this->table";
@@ -151,7 +164,14 @@ class VABSAPIWPSettings {
 						useStripe = :useStripe,
 						stripeSandbox = :stripeSandbox,
 						stripeSecretTestKey = :stripeSecretTestKey,
-						stripeSecretProdKey = :stripeSecretProdKey";
+						stripeSecretProdKey = :stripeSecretProdKey,
+						
+						blockBookingEnabled = :blockBookingEnabled,
+						blockBookingFrom = :blockBookingFrom,
+						blockBookingTo = :blockBookingTo,
+						blockBookingText = :blockBookingText,
+						additionalCalendarStartDays = :additionalCalendarStartDays,
+						additionalCalendarStartDaysText = :additionalCalendarStartDaysText";
 			$stm = $this->conPDO->prepare ($SQL);
 			$stm->bindValue (':apiToken', $this->apiToken);
 			$stm->bindValue (':apiClientId', $this->apiClientId);
@@ -175,6 +195,13 @@ class VABSAPIWPSettings {
 			$stm->bindValue (':stripeSandbox', $this->stripeSandbox, PDO::PARAM_INT);
 			$stm->bindValue (':stripeSecretTestKey', $this->stripeSecretTestKey);
 			$stm->bindValue (':stripeSecretProdKey', $this->stripeSecretProdKey);
+
+			$stm->bindValue (':blockBookingEnabled', $this->blockBookingEnabled, PDO::PARAM_INT);
+			$stm->bindValue (':blockBookingFrom', $this->blockBookingFrom);
+			$stm->bindValue (':blockBookingTo', $this->blockBookingTo);
+			$stm->bindValue (':blockBookingText', $this->blockBookingText);
+			$stm->bindValue (':additionalCalendarStartDays', $this->additionalCalendarStartDays);
+			$stm->bindValue (':additionalCalendarStartDaysText', $this->additionalCalendarStartDaysText);
 
 			$stm->execute ();
 
@@ -211,16 +238,27 @@ class VABSAPIWPSettings {
 					`cancelPage` VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
 					`textBeforeBooking` VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
 					`referrerId` SMALLINT(6) NULL DEFAULT NULL,
+					
 					`underConstruction` TINYINT(1) UNSIGNED NOT NULL DEFAULT '0',
 					`underConstructionText` VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
+					
 					`payPal` TINYINT(1) UNSIGNED NOT NULL DEFAULT '0',
 					`payPalSandbox` TINYINT(1) UNSIGNED NOT NULL DEFAULT '1',
 					`payPalClientId` VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
 					`payPalClientSecret` VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
+					
 					`useStripe` TINYINT(1) UNSIGNED NOT NULL DEFAULT '0',
 					`stripeSandbox` TINYINT(1) UNSIGNED NOT NULL DEFAULT '0',
 					`stripeSecretTestKey` VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
 					`stripeSecretProdKey` VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
+					
+					`blockBookingEnabled` TINYINT(1) UNSIGNED NOT NULL,
+					`blockBookingFrom` DATE NULL DEFAULT NULL,
+					`blockBookingTo` DATE NULL DEFAULT NULL,
+					`blockBookingText` VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
+					`additionalCalendarStartDays` TINYINT(3) UNSIGNED NOT NULL,
+					`additionalCalendarStartDaysText` VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
+					
 					`versionNumber` VARCHAR(10) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
 					PRIMARY KEY (`id`) USING BTREE
 				)
@@ -232,29 +270,36 @@ class VABSAPIWPSettings {
 				$SQL = "INSERT INTO 
 							$this->table 
 						SET 
-							apiToken = '',
-							apiClientId = '',
-							apiURL = '',
-							dsgvoLink = '',
-							agbLink = '',
-							successPage = '',
-							cancelPage = '',
-							textBeforeBooking = '',
-							referrerId = 0,
-							underConstruction = 0,
-							underConstructionText = '',
-							payPal = 0,
-							payPalSandbox = 0,
-							payPalClientId = '',
-							payPalClientSecret = '',
-							useStripe = 0,
-							stripeSandbox = 0,
-							stripeSecretTestKey = '',
-							stripeSecretProdKey = ''";
+							id = 1";
 				$stm = $this->conPDO->prepare ($SQL);
 
 				$stm->execute ();
 
+			}
+
+			//Check if the following fields exists if not add them to the table
+			/*
+			 * `blockBookingEnabled` TINYINT(1) UNSIGNED NOT NULL,
+			`blockBookingFrom` DATE NULL DEFAULT NULL,
+			`blockBookingTo` DATE NULL DEFAULT NULL,
+			`blockBookingText` VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
+			`additionalCalendarStartDays` TINYINT(3) UNSIGNED NOT NULL,
+			`additionalCalendarStartDaysText` VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
+			 */
+
+			$SQL = "SHOW COLUMNS FROM $this->table LIKE 'blockBookingEnabled'";
+			$stm = $this->conPDO->prepare ($SQL);
+			$stm->execute ();
+			if ($stm->rowCount () == 0) {
+				$SQL = "ALTER TABLE $this->table
+						ADD COLUMN `blockBookingEnabled` TINYINT(1) UNSIGNED NOT NULL,
+						ADD COLUMN `blockBookingFrom` DATE NULL DEFAULT NULL,
+						ADD COLUMN `blockBookingTo` DATE NULL DEFAULT NULL,
+						ADD COLUMN `blockBookingText` VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
+						ADD COLUMN `additionalCalendarStartDays` TINYINT(3) UNSIGNED NOT NULL,
+						ADD COLUMN `additionalCalendarStartDaysText` VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8_general_ci'";
+				$stm = $this->conPDO->prepare ($SQL);
+				$stm->execute ();
 			}
 
 		} catch (PDOException|Exception $e) {
