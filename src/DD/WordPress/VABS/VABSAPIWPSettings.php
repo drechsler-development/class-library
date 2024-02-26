@@ -277,16 +277,6 @@ class VABSAPIWPSettings {
 
 			}
 
-			//Check if the following fields exists if not add them to the table
-			/*
-			 * `blockBookingEnabled` TINYINT(1) UNSIGNED NOT NULL,
-			`blockBookingFrom` DATE NULL DEFAULT NULL,
-			`blockBookingTo` DATE NULL DEFAULT NULL,
-			`blockBookingText` VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
-			`additionalCalendarStartDays` TINYINT(3) UNSIGNED NOT NULL,
-			`additionalCalendarStartDaysText` VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
-			 */
-
 			$SQL = "SHOW COLUMNS FROM $this->table LIKE 'blockBookingEnabled'";
 			$stm = $this->conPDO->prepare ($SQL);
 			$stm->execute ();
