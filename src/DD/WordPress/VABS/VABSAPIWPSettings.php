@@ -222,7 +222,7 @@ class VABSAPIWPSettings {
 
 		try {
 
-			$SQL = "SHOW TABLES LIKE $this->table";
+			$SQL = "SHOW TABLES LIKE '$this->table'";
 			$stm = $this->conPDO->prepare ($SQL);
 			$stm->execute ();
 			if ($stm->rowCount () == 0) {
