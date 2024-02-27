@@ -84,6 +84,7 @@ class VABSAPIWPSettings {
 					IFNULL(dsgvoLink,'') as dsgvoLink,
 					IFNULL(agbLink,'') as agbLink,
 					IFNULL(successPage,'') as successPage,
+					IFNULL(cancelPage,'') as cancelPage,
 					IFNULL(textBeforeBooking,'') as textBeforeBooking,
 					IFNULL(referrerId,0) as referrerId,
 					
@@ -197,8 +198,16 @@ class VABSAPIWPSettings {
 			$stm->bindValue (':stripeSecretProdKey', $this->stripeSecretProdKey);
 
 			$stm->bindValue (':blockBookingEnabled', $this->blockBookingEnabled, PDO::PARAM_INT);
-			$stm->bindValue (':blockBookingFrom', $this->blockBookingFrom);
-			$stm->bindValue (':blockBookingTo', $this->blockBookingTo);
+			if (empty($this->blockBookingFrom)) {
+				$stm->bindValue (':blockBookingFrom', null, PDO::PARAM_NULL);
+			} else {
+				$stm->bindValue (':blockBookingFrom', $this->blockBookingFrom);
+			}
+			if (empty($this->blockBookingTo)) {
+				$stm->bindValue (':blockBookingTo', null, PDO::PARAM_NULL);
+			} else {
+				$stm->bindValue (':blockBookingTo', $this->blockBookingTo);
+			}
 			$stm->bindValue (':blockBookingText', $this->blockBookingText);
 			$stm->bindValue (':additionalCalendarStartDays', $this->additionalCalendarStartDays);
 			$stm->bindValue (':additionalCalendarStartDaysText', $this->additionalCalendarStartDaysText);
