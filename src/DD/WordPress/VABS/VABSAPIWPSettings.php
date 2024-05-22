@@ -46,6 +46,7 @@ class VABSAPIWPSettings {
 	public VABSAPIWPSettings $row;
 	public string            $errorMessage  = '';
 	public string            $versionNumber = '';
+	public int $allowKeyPickedUp = 0;
 	private string           $table;
 
 	private PDO $conPDO;
@@ -106,7 +107,9 @@ class VABSAPIWPSettings {
 					IFNULL(blockBookingTo,'') as blockBookingTo,
 					IFNULL(blockBookingText,'') as blockBookingText,
 					IFNULL(additionalCalendarStartDays,0) as additionalCalendarStartDays,
-					IFNULL(additionalCalendarStartDaysText,'') as additionalCalendarStartDaysText
+					IFNULL(additionalCalendarStartDaysText,'') as additionalCalendarStartDaysText,
+					
+					IFNULL(allowKeyPickedUp,0) as allowKeyPickedUp
 
 				FROM
 					$this->table";
@@ -172,7 +175,8 @@ class VABSAPIWPSettings {
 						blockBookingTo = :blockBookingTo,
 						blockBookingText = :blockBookingText,
 						additionalCalendarStartDays = :additionalCalendarStartDays,
-						additionalCalendarStartDaysText = :additionalCalendarStartDaysText";
+						additionalCalendarStartDaysText = :additionalCalendarStartDaysText,
+						allowKeyPickedUp = :allowKeyPickedUp";
 			$stm = $this->conPDO->prepare ($SQL);
 			$stm->bindValue (':apiToken', $this->apiToken);
 			$stm->bindValue (':apiClientId', $this->apiClientId);
@@ -211,6 +215,7 @@ class VABSAPIWPSettings {
 			$stm->bindValue (':blockBookingText', $this->blockBookingText);
 			$stm->bindValue (':additionalCalendarStartDays', $this->additionalCalendarStartDays);
 			$stm->bindValue (':additionalCalendarStartDaysText', $this->additionalCalendarStartDaysText);
+			$stm->bindValue (':allowKeyPickedUp', $this->allowKeyPickedUp, PDO::PARAM_INT);
 
 			$stm->execute ();
 
@@ -297,6 +302,16 @@ class VABSAPIWPSettings {
 						ADD COLUMN `blockBookingText` VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8_general_ci',
 						ADD COLUMN `additionalCalendarStartDays` TINYINT(3) UNSIGNED NOT NULL,
 						ADD COLUMN `additionalCalendarStartDaysText` VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8_general_ci'";
+				$stm = $this->conPDO->prepare ($SQL);
+				$stm->execute ();
+			}
+
+			$SQL = "SHOW COLUMNS FROM $this->table LIKE 'allowKeyPickedUp'";
+			$stm = $this->conPDO->prepare ($SQL);
+			$stm->execute ();
+			if ($stm->rowCount () == 0) {
+				$SQL = "ALTER TABLE $this->table
+						ADD COLUMN `allowKeyPickedUp` TINYINT(1) UNSIGNED DEFAULT 0 NOT NULL";
 				$stm = $this->conPDO->prepare ($SQL);
 				$stm->execute ();
 			}
