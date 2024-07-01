@@ -2,6 +2,7 @@
 
 namespace DD\CloudDataService;
 
+use DD\Exceptions\ValidationException;
 use DD\Helper\Strings;
 use Exception;
 
@@ -197,17 +198,33 @@ class DropBox
 	}
 
 	/**
-	 * @param string $folder
-	 * @param string $file
-	 * @return array
+	 * @param string $dropBoxFolder the folder at the DropBox site where the file is located
+	 * @param string $dropBoxFileName the name of the file at the DropBox site
+	 * @param string $localTempFolder the folder where the file will be downloaded onto the server, that requests the download
+	 *
+	 * @return array (associative) either an 'url' of the local storage and the 'fileName' or an error will be returned back
+	 * @throws ValidationException
 	 */
-	public function Download (string $folder, string $file): array {
+	public function Download (string $dropBoxFolder, string $dropBoxFileName, string $localTempFolder = ""): array {
 
 		$this->responseArray['error'] = "";
 
 		$endPoint = '/files/download';
 
-		$path = $folder != "" ? $folder."/".basename ($file) : basename ($file);
+		if(!empty($localTempFolder)){
+			$localTempFolder = rtrim($localTempFolder, '/');
+			$localTempFolder = $localTempFolder.'/';
+			//Check if folder exists
+			if (!file_exists($localTempFolder)) {
+				throw new ValidationException("provided TEMP folder does not exist");
+			}
+		} else {
+
+			$localTempFolder = defined ('TEMP') ? TEMP : throw new ValidationException("TEMP folder provided as constant 'TEMP' not defined");
+
+		}
+
+		$path = $dropBoxFolder != "" ? $dropBoxFolder."/".basename ($dropBoxFileName) : basename ($dropBoxFileName);
 
 		$args   = json_encode ([
 			"path" => $path,
@@ -220,11 +237,11 @@ class DropBox
 
 		try {
 
-			$extension = substr ($file, strripos ($file, "."));
+			$extension = substr ($dropBoxFileName, strripos ($dropBoxFileName, "."));
 
 			$fileName    = Strings::GetRandomString (20).$extension;
-			$tempFile    = fopen (TEMP."/".$fileName, "w+");
-			$tempFileWeb = TEMP_WEB."/".$fileName;
+			$localFilePath = $localTempFolder . "/" . $fileName;
+			$tempFile    = fopen ($localFilePath, "w+");
 
 			$curl = curl_init (self::DROPBOX_CONTENT_URL.$endPoint);
 
@@ -234,13 +251,12 @@ class DropBox
 
 			$response = curl_exec ($curl);
 
-			//print_r($response);
-
 			$http_code = curl_getinfo ($curl, CURLINFO_HTTP_CODE);
 			curl_close ($curl);
 			fclose ($tempFile);
 			if ($http_code == 200) {
-				$this->responseArray['url'] = $tempFileWeb;
+				$this->responseArray['url'] = $localFilePath;
+				$this->responseArray['fileName'] = $fileName;
 			} else {
 				$this->responseArray['error'] = json_decode ($response, true);
 			}
