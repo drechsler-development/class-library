@@ -49,7 +49,7 @@ class VABSAPIWPSettings {
 
 	public VABSAPIWPSettings $row;
 	public string            $errorMessage  = '';
-	public string            $versionNumber = '1.0.15';
+	public string            $versionNumber = '1.0.26';
 	public int               $allowKeyPickedUp = 0;
 	private string           $table;
 
