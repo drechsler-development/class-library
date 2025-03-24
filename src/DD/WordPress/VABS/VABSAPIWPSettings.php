@@ -49,7 +49,7 @@ class VABSAPIWPSettings {
 
 	public VABSAPIWPSettings $row;
 	public string            $errorMessage  = '';
-	public string            $versionNumber = '';
+	public string            $versionNumber = '1.0.15';
 	public int               $allowKeyPickedUp = 0;
 	private string           $table;
 
@@ -341,6 +341,11 @@ class VABSAPIWPSettings {
 				$stm = $this->conPDO->prepare ($SQL);
 				$stm->execute ();
 			}
+
+			$SQL = "UPDATE $this->table SET versionNumber = :versionNumber";
+			$stm = $this->conPDO->prepare ($SQL);
+			$stm->bindValue (':versionNumber', $this->versionNumber);
+			$stm->execute ();
 
 		} catch (PDOException|Exception $e) {
 			$this->errorMessage = $e->getMessage ();
