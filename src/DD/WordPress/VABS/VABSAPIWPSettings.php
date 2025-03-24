@@ -41,12 +41,16 @@ class VABSAPIWPSettings {
 	public int    $additionalCalendarStartDays     = 0;
 	public string $additionalCalendarStartDaysText = '';
 
+	public int    $useOrderTimes = 0;
+	public string $orderTimeFrom = '';
+	public string $orderTimeTo   = '';
+
 	public int $debug = 0;
 
 	public VABSAPIWPSettings $row;
 	public string            $errorMessage  = '';
 	public string            $versionNumber = '';
-	public int $allowKeyPickedUp = 0;
+	public int               $allowKeyPickedUp = 0;
 	private string           $table;
 
 	private PDO $conPDO;
@@ -109,7 +113,9 @@ class VABSAPIWPSettings {
 					IFNULL(additionalCalendarStartDays,0) as additionalCalendarStartDays,
 					IFNULL(additionalCalendarStartDaysText,'') as additionalCalendarStartDaysText,
 					
-					IFNULL(allowKeyPickedUp,0) as allowKeyPickedUp
+					IFNULL(allowKeyPickedUp,0) as allowKeyPickedUp,
+					
+					IFNULL(versionNumber,0) as versionNumber
 
 				FROM
 					$this->table";
@@ -170,6 +176,10 @@ class VABSAPIWPSettings {
 						stripeSecretTestKey = :stripeSecretTestKey,
 						stripeSecretProdKey = :stripeSecretProdKey,
 						
+						useOrderTimes = :useOrderTimes,
+						orderTimeFrom = :orderTimeFrom,
+						orderTimeTo = :orderTimeTo,
+						
 						blockBookingEnabled = :blockBookingEnabled,
 						blockBookingFrom = :blockBookingFrom,
 						blockBookingTo = :blockBookingTo,
@@ -200,6 +210,10 @@ class VABSAPIWPSettings {
 			$stm->bindValue (':stripeSandbox', $this->stripeSandbox, PDO::PARAM_INT);
 			$stm->bindValue (':stripeSecretTestKey', $this->stripeSecretTestKey);
 			$stm->bindValue (':stripeSecretProdKey', $this->stripeSecretProdKey);
+
+			$stm->bindValue (':useOrderTimes', $this->useOrderTimes, PDO::PARAM_INT);
+			$stm->bindValue (':orderTimeFrom', $this->orderTimeFrom);
+			$stm->bindValue (':orderTimeTo', $this->orderTimeTo);
 
 			$stm->bindValue (':blockBookingEnabled', $this->blockBookingEnabled, PDO::PARAM_INT);
 			if (empty($this->blockBookingFrom)) {
@@ -312,6 +326,18 @@ class VABSAPIWPSettings {
 			if ($stm->rowCount () == 0) {
 				$SQL = "ALTER TABLE $this->table
 						ADD COLUMN `allowKeyPickedUp` TINYINT(1) UNSIGNED DEFAULT 0 NOT NULL";
+				$stm = $this->conPDO->prepare ($SQL);
+				$stm->execute ();
+			}
+
+			$SQL = "SHOW COLUMNS FROM $this->table LIKE 'useOrderTimes'";
+			$stm = $this->conPDO->prepare ($SQL);
+			$stm->execute ();
+			if ($stm->rowCount () == 0) {
+				$SQL = "ALTER TABLE $this->table
+						ADD COLUMN `useOrderTimes` TINYINT(1) UNSIGNED NOT NULL AFTER `additionalCalendarStartDays`,
+						ADD COLUMN `orderTimeFrom` TIME NULL DEFAULT NULL AFTER `useOrderTimes`,
+						ADD COLUMN `orderTimeTo` TIME NULL DEFAULT NULL AFTER `orderTimeFrom`";
 				$stm = $this->conPDO->prepare ($SQL);
 				$stm->execute ();
 			}
