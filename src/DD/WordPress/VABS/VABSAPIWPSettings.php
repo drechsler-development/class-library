@@ -106,6 +106,11 @@ class VABSAPIWPSettings {
 					IFNULL(stripeSecretTestKey,'') as stripeSecretTestKey,
 					IFNULL(stripeSecretProdKey,'') as stripeSecretProdKey,
 					
+					IFNULL(useOrderTimes,0) as useOrderTimes,
+					IFNULL(orderTimeFrom,'') as orderTimeFrom,
+					IFNULL(orderTimeTo,'') as orderTimeTo,
+					
+					
 					IFNULL(blockBookingEnabled,0) as blockBookingEnabled,
 					IFNULL(blockBookingFrom,'') as blockBookingFrom,
 					IFNULL(blockBookingTo,'') as blockBookingTo,
