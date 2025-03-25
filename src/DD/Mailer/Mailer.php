@@ -256,7 +256,7 @@ class Mailer extends PHPMailer
 
 		$systemType = defined ('SYSTEMTYPE_NAME') ? SYSTEMTYPE_NAME : '';
 
-		return $systemType != SystemType::PROD ? $systemType." :: ".$subject : $subject;
+		return $systemType != SystemType::PROD && strtoupper ($systemType) != 'PROD' ? $systemType." :: ".$subject : $subject;
 
 	}
 
