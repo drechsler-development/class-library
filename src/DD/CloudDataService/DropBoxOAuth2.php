@@ -384,7 +384,7 @@ class DropBoxOAuth2
 	 * @param int|null $gapInSeconds
 	 * @return bool
 	 */
-	public static function CheckTokenExired (DateTime $expirationDate, int $gapInSeconds = null): bool {
+	public static function CheckTokenExired (DateTime $expirationDate, int $gapInSeconds = 0): bool {
 
 		$now = empty($gapInSeconds) ? new DateTime() : (new DateTime())->modify ("-$gapInSeconds seconds");
 

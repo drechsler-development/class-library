@@ -40,13 +40,13 @@ class Date {
 	 * @throws ValidationException
 	 * @throws Exception
 	 */
-	public static function ValidateDate(string $date = null, string $format = null) : bool {
+	public static function ValidateDate(string $date = '', string $format = '') : bool {
 
 		$returnValue = false;
 
 		if(!empty($date)) {
 
-			if ($format == null) {
+			if (empty($format)) {
 
 				foreach (self::$allowedValues as $targetFormat) {
 					$d = new DateTime(date ($targetFormat, strtotime (trim ($date))));

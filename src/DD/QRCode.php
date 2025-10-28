@@ -60,7 +60,7 @@ class QRCode
 	 * @param string|null $filename if filename is not ending with PNG it will be automatically added as suffix
 	 * @return bool
 	 */
-	public function Draw (int $size = 150, string $filename = null): bool {
+	public function Draw (int $size = 150, string $filename = ''): bool {
 
 		$ch = curl_init ();
 		curl_setopt ($ch, CURLOPT_URL, self::API_CHART_URL);
@@ -73,7 +73,7 @@ class QRCode
 		curl_close ($ch);
 
 		if ($img) {
-			if ($filename) {
+			if (!empty($filename)) {
 				if (!preg_match ("#\.png$#i", $filename)) {
 					$filename .= ".png";
 				}
@@ -167,4 +167,3 @@ class QRCode
 		$this->data = "WIFI:S:$ssid;T:$type;P:$password;;";
 	}
 }
-

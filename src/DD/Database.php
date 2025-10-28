@@ -29,9 +29,9 @@ class Database {
 	 * @return PDO
 	 * @throws ValidationException
 	 */
-	public static function getInstance (?string $host = null, ?string $dbName = null, ?string $dbUser = null, ?string $dbPass = null): ?PDO {
+	public static function getInstance (string $host = '', string $dbName = '', string $dbUser = 'null', string $dbPass = ''): ?PDO {
 
-		if($host && $dbName && $dbUser && $dbPass){
+		if(!empty($host) && !empty($dbName) && !empty($dbUser) && !empty($dbPass)){
 			define('DB_HOST', $host);
 			define('DB_NAME', $dbName);
 			define('DB_USER', $dbUser);
