@@ -63,7 +63,6 @@ class Mailer extends PHPMailer
 		$this->Host     = defined ("SMTP_SERVER_OVERWRITE") ? SMTP_SERVER_OVERWRITE : $this->Host;
 		$this->SMTPAuth = defined ("SMTP_AUTH_OVERWRITE") ? SMTP_AUTH_OVERWRITE : $this->SMTPAuth;
 
-		$this->SMTPSecure = 'tls';
 		$this->isComment  = (bool)$isComment;
 
 		$systemType = defined ("SYSTEMTYPE") ? SYSTEMTYPE : '';
@@ -210,6 +209,12 @@ class Mailer extends PHPMailer
 					'allow_self_signed' => true,
 				],
 			];
+
+			$this->SMTPSecure  = '';
+			$this->SMTPAuth    = false;
+			$this->SMTPAutoTLS = false;
+		}else{
+			$this->SMTPSecure = 'tls';
 		}
 
 		return parent::send ();
