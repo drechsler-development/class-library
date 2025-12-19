@@ -52,7 +52,7 @@ class LatLon {
 	 *
 	 * @return array
 	 */
-	private function GetLatLon(string $address) : array {
+	public function GetLatLon(string $address) : array {
 
 		$data = [
 			'q'      => $address,
