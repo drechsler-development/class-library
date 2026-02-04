@@ -174,11 +174,13 @@ class TSEService {
 			$payment = $line['payment'] ?? 'NON_CASH';
 
 			// --- VAT mapping zu FISKALY-Keys ---
-			$vatKey = match ($vatRate) {
-				19 => 'NORMAL',
-				7 => 'REDUCED',
-				0 => 'ZERO',
-				default => 'OTHER',
+			$vatKey = match (floatval ($vatRate)) {
+				19.0 => 'NORMAL',
+				7.0 => 'REDUCED_1',
+				10.7 => 'SPECIAL_RATE_1',
+				5.5 => 'SPECIAL_RATE_2',
+				0.0 => '0',
+				default => 'NULL',
 			};
 
 			if (!isset($vatGroups[$vatKey])) {
