@@ -179,7 +179,7 @@ class TSEService {
 				7.0 => 'REDUCED_1',
 				10.7 => 'SPECIAL_RATE_1',
 				5.5 => 'SPECIAL_RATE_2',
-				0.0 => '0',
+				0.0 => 'NULL',
 				default => 'NULL',
 			};
 
